@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>Mobenga_OSGI</artifactId>
+        <groupId>Mobenga_OSGI</groupId>
+        <version>0.1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>bundle</packaging>
+    <artifactId>OSGI-CORE</artifactId>
+
+    <properties>
+        <osgi-import-package>
+            META-INF.cxf,
+            org.apache.cxf.*,
+            org.springframework.beans.*,
+            org.apache.camel.*,
+            org.springframework.stereotype,
+            org.apache.activemq.*,
+            javax.ws.rs,
+            osgi.util.*
+        </osgi-import-package>
+        <osgi-dynamicimport-package>
+            javax.*;
+            org.apache.cxf.*,
+            org.springframework.beans.*,
+            org.apache.camel.*,
+            osgi.util.*
+        </osgi-dynamicimport-package>
+    </properties>
+
+
+    <dependencies>
+
+        <dependency>
+            <groupId>Mobenga_OSGI</groupId>
+            <artifactId>UTIL</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-camel</artifactId>
+            <version>5.7.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+
+        <!-- cxf using slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jetty</artifactId>
+            <version>2.10.6</version>
+            <!-- use the same version as your Camel core version -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-servlet_2.5_spec</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.servicemix.bundles</groupId>
+            <artifactId>org.apache.servicemix.bundles.commons-io</artifactId>
+            <version>1.4_3</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jms</artifactId>
+            <version>2.10.6</version>
+            <!-- use the same version as your Camel core version -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>2.10.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test</artifactId>
+            <version>2.10.6</version>
+            <scope>test</scope>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+
+        <resources>
+            <!-- standard Maven folder -->
+            <resource>
+                <directory>src/main/resources/</directory>
+            </resource>
+            <!-- plus root folder -->
+            <resource>
+                <directory>feature</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.4.0</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Import-Package>${osgi-import-package}</Import-Package>
+                        <Export-Package>osgi</Export-Package>
+                        <manifestLocation>target/bnd</manifestLocation>
+                        <DynamicImport-Package>
+                            ${osgi-dynamicimport-package}
+                        </DynamicImport-Package>
+                        <Embed-Dependency>*;scope=provided;inline=true</Embed-Dependency>
+                        <Include-Resource>
+                            {maven-resources},
+                            {maven-dependencies}
+                        </Include-Resource>
+                    </instructions>
+
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.karaf.tooling</groupId>
+                <artifactId>features-maven-plugin</artifactId>
+                <version>2.3.2</version>
+                <executions>
+                    <execution>
+                        <id>create-kar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>create-kar</goal>
+                        </goals>
+                        <configuration>
+                            <featuresFile>feature/features.xml</featuresFile>
+                            <archive>
+                                <manifestFile>${basedir}/target/bnd/MANIFEST.MF</manifestFile>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/src/main/resources/templates</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/META-INF</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+
+        </plugins>
+
+    </build>
+
+</project>
